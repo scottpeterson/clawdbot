@@ -10,6 +10,7 @@ import lockfile from "proper-lockfile";
 
 import type { ClawdbotConfig } from "../config/config.js";
 import { resolveOAuthPath } from "../config/paths.js";
+import { refreshGoogleToken } from "../google/auth.js";
 import { resolveUserPath } from "../utils.js";
 import { resolveClawdbotAgentDir } from "./agent-paths.js";
 
@@ -130,6 +131,27 @@ async function refreshOAuthTokenWithLock(params: {
       return {
         apiKey: buildOAuthApiKey(cred.provider, cred),
         newCredentials: cred,
+      };
+    }
+
+    // Handle google-workspace provider separately (not supported by pi-ai)
+    if (cred.provider === ("google-workspace" as OAuthProvider)) {
+      if (!cred.refresh) return null;
+      const refreshed = await refreshGoogleToken(cred.refresh);
+      const newCredentials: OAuthCredentials = {
+        ...cred,
+        access: refreshed.access,
+        expires: refreshed.expires,
+      };
+      store.profiles[params.profileId] = {
+        ...cred,
+        ...newCredentials,
+        type: "oauth",
+      };
+      saveAuthProfileStore(store, params.agentDir);
+      return {
+        apiKey: newCredentials.access,
+        newCredentials,
       };
     }
 

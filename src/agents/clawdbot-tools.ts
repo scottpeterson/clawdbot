@@ -5,6 +5,8 @@ import type { AnyAgentTool } from "./tools/common.js";
 import { createCronTool } from "./tools/cron-tool.js";
 import { createDiscordTool } from "./tools/discord-tool.js";
 import { createGatewayTool } from "./tools/gateway-tool.js";
+import { createGoogleCalendarTool } from "./tools/google-calendar-tool.js";
+import { createGoogleGmailTool } from "./tools/google-gmail-tool.js";
 import { createImageTool } from "./tools/image-tool.js";
 import { createNodesTool } from "./tools/nodes-tool.js";
 import { createSessionsHistoryTool } from "./tools/sessions-history-tool.js";
@@ -22,6 +24,14 @@ export function createClawdbotTools(options?: {
   config?: ClawdbotConfig;
 }): AnyAgentTool[] {
   const imageTool = createImageTool({
+    config: options?.config,
+    agentDir: options?.agentDir,
+  });
+  const gmailTool = createGoogleGmailTool({
+    config: options?.config,
+    agentDir: options?.agentDir,
+  });
+  const calendarTool = createGoogleCalendarTool({
     config: options?.config,
     agentDir: options?.agentDir,
   });
@@ -52,5 +62,7 @@ export function createClawdbotTools(options?: {
       sandboxed: options?.sandboxed,
     }),
     ...(imageTool ? [imageTool] : []),
+    ...(gmailTool ? [gmailTool] : []),
+    ...(calendarTool ? [calendarTool] : []),
   ];
 }
